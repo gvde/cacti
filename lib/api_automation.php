@@ -3086,9 +3086,9 @@ function automation_add_tree($host_id, $tree) {
 function automation_find_os($sysDescr, $sysObject, $sysName) {
 	$sql_where  = '';
 
-	$sql_where .= "WHERE IF(LEFT(sysDescr,1)='/', ? REGEXP SUBSTRING(sysDescr,2), ? LIKE CONCAT('%', sysDescr, '%'))";
-	$sql_where .= " AND IF(LEFT(sysOid,1)='/', ? REGEXP SUBSTRING(sysOid,2), ? LIKE CONCAT('%', sysOid, '%'))";
-	$sql_where .= " AND IF(LEFT(sysName,1)='/', ? REGEXP SUBSTRING(sysName,2), ? LIKE CONCAT('%', sysName, '%'))";
+	$sql_where .= "WHERE CASE LEFT(sysDescr,1) WHEN '/' THEN ? REGEXP SUBSTRING(sysDescr,2) ELSE ? LIKE CONCAT('%', sysDescr, '%') END";
+	$sql_where .= " AND CASE LEFT(sysOid,1) WHEN '/' THEN ? REGEXP SUBSTRING(sysOid,2) ELSE ? LIKE CONCAT('%', sysOid, '%') END";
+	$sql_where .= " AND CASE LEFT(sysName,1) WHEN '/' THEN ? REGEXP SUBSTRING(sysName,2) ELSE ? LIKE CONCAT('%', sysName, '%') END";
 
 	$params = array($sysDescr, $sysDescr, $sysObject, $sysObject, $sysName, $sysName);
 
