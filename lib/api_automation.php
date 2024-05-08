@@ -3493,20 +3493,18 @@ function automation_add_tree($host_id, $tree) {
 function automation_find_os($sysDescr, $sysObject, $sysName) {
 	$sql_where  = '';
 
-	$qsysObject = trim(db_qstr($sysObject), "'");
-	$qsysDescr  = trim(db_qstr($sysDescr), "'");
-	$qsysName   = trim(db_qstr($sysName), "'");
+	$sql_where .= "WHERE CASE LEFT(sysDescr,1) WHEN '/' THEN ? REGEXP SUBSTRING(sysDescr,2) ELSE ? LIKE CONCAT('%', sysDescr, '%') END";
+	$sql_where .= " AND CASE LEFT(sysOid,1) WHEN '/' THEN ? REGEXP SUBSTRING(sysOid,2) ELSE ? LIKE CONCAT('%', sysOid, '%') END";
+	$sql_where .= " AND CASE LEFT(sysName,1) WHEN '/' THEN ? REGEXP SUBSTRING(sysName,2) ELSE ? LIKE CONCAT('%', sysName, '%') END";
 
-	$sql_where .= trim($sysDescr)  != '' ? 'WHERE (sysDescr REGEXP "(' . preg_quote($qsysDescr) . ')" OR ' . db_qstr($sysDescr) . ' LIKE CONCAT("%", sysDescr, "%"))':'';
-	$sql_where .= trim($sysObject) != '' ? ($sql_where != '' ? ' AND':'WHERE') . ' (sysOID REGEXP "(' . preg_quote($qsysObject) . ')" OR ' . db_qstr($sysObject) . ' LIKE CONCAT("%", sysOid, "%"))':'';
-	$sql_where .= trim($sysName)   != '' ? ($sql_where != '' ? ' AND':'WHERE') . ' (sysName REGEXP "(' . preg_quote($qsysName) . ')" OR ' . db_qstr($sysName) . ' LIKE CONCAT("%", sysName, "%"))':'';
+	$params = array($sysDescr, $sysDescr, $sysObject, $sysObject, $sysName, $sysName);
 
-	$result = db_fetch_row("SELECT at.*, ht.name
+	$result = db_fetch_row_prepared("SELECT at.*, ht.name
 		FROM automation_templates AS at
 		INNER JOIN host_template AS ht
 		ON ht.id = at.host_template
 		$sql_where
-		ORDER BY sequence LIMIT 1");
+		ORDER BY sequence LIMIT 1", $params);
 
 	if (cacti_sizeof($result)) {
 		return $result;
